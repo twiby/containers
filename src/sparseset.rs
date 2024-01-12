@@ -124,6 +124,22 @@ where
             &mut self.data.get_unchecked_mut(position).1
         }
     }
+
+    pub fn items(&self) -> impl Iterator<Item = &(usize, T)> {
+        self.data.iter()
+    }
+
+    pub fn keys(&self) -> impl Iterator<Item = usize> + '_ {
+        self.items().map(|(i, _)| *i)
+    }
+
+    pub fn values<'a>(&'a self) -> impl Iterator<Item = &'a T> {
+        self.items().map(|(_, val)| val)
+    }
+
+    pub fn values_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
+        self.data.iter_mut().map(|(_, val)| val)
+    }
 }
 
 impl<T, Containers> std::ops::Index<usize> for GenericSparseSet<T, Containers>
@@ -260,5 +276,28 @@ mod tests {
 
         *set.get_unchecked_mut(i1) = 10;
         assert_eq!(set.get_unchecked(i1), &10);
+    }
+
+    #[test_with(DynamicContainerMarker, StaticContainerMarker<20>)]
+    fn iteration<T: SparseSetContainers<usize>>() {
+        let mut set = GenericSparseSet::<usize, T>::new();
+
+        let mut indices = vec![];
+        for i in 0..10 {
+            indices.push(set.insert(i));
+        }
+
+        assert_eq!(indices, set.items().map(|t| t.0).collect::<Vec<_>>());
+        assert_eq!(indices, set.items().map(|t| t.1).collect::<Vec<_>>());
+        assert_eq!(indices, set.keys().collect::<Vec<_>>());
+        assert_eq!(indices, set.values().copied().collect::<Vec<_>>());
+
+        for i in set.values_mut() {
+            *i += 1;
+        }
+
+        for (n, &m) in indices.iter().zip(set.values()) {
+            assert_eq!(n + 1, m)
+        }
     }
 }
