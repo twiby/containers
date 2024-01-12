@@ -1,3 +1,4 @@
+use crate::staticvec::StaticVec;
 use crate::staticvec::VecLike;
 
 pub trait SparseSetContainers<T> {
@@ -13,7 +14,15 @@ impl<T> SparseSetContainers<T> for DynamicContainerMarker {
     type FreeIndicesContainer = Vec<usize>;
 }
 
+pub struct StaticContainerMarker<const N: usize>;
+impl<T: Default, const N: usize> SparseSetContainers<T> for StaticContainerMarker<N> {
+    type DataContainer = StaticVec<(usize, T), N>;
+    type PositionsContainer = StaticVec<Option<usize>, N>;
+    type FreeIndicesContainer = StaticVec<usize, N>;
+}
+
 pub type SparseSet<T> = GenericSparseSet<T, DynamicContainerMarker>;
+pub type StaticSparseSet<T, const N: usize> = GenericSparseSet<T, StaticContainerMarker<N>>;
 
 #[derive(Debug, Clone)]
 pub struct GenericSparseSet<T, Containers>
@@ -139,6 +148,10 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::sparseset::DynamicContainerMarker;
+    use crate::sparseset::GenericSparseSet;
+    use crate::sparseset::SparseSetContainers;
+    use crate::sparseset::StaticContainerMarker;
     use crate::SparseSet;
     use typed_test_gen::test_with;
 
@@ -190,15 +203,13 @@ mod tests {
         assert_eq!(size, set.positions.len());
     }
 
-    #[test]
-    fn get() {
-        let mut set = SparseSet::<usize>::new();
+    #[test_with(DynamicContainerMarker, StaticContainerMarker<2>)]
+    fn get<T: SparseSetContainers<usize>>() {
+        let mut set = GenericSparseSet::<usize, T>::new();
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        println!("{:?}", set.positions);
         assert!(set.remove(i0));
-        println!("{:?}", set.positions);
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
 
@@ -208,15 +219,13 @@ mod tests {
         assert_eq!(set.get_mut(i0), None);
     }
 
-    #[test]
-    fn index() {
-        let mut set = SparseSet::<usize>::new();
+    #[test_with(DynamicContainerMarker, StaticContainerMarker<2>)]
+    fn index<T: SparseSetContainers<usize>>() {
+        let mut set = GenericSparseSet::<usize, T>::new();
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        println!("{:?}", set.positions);
         assert!(set.remove(i0));
-        println!("{:?}", set.positions);
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
         assert_eq!(set[i1], 1);
@@ -225,31 +234,27 @@ mod tests {
         assert_eq!(set[i1], 10);
     }
 
-    #[test]
+    #[test_with(DynamicContainerMarker, StaticContainerMarker<1>)]
     #[should_panic]
-    fn index_panic() {
-        let mut set = SparseSet::<usize>::new();
+    fn index_panic<T: SparseSetContainers<usize>>() {
+        let mut set = GenericSparseSet::<usize, T>::new();
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        println!("{:?}", set.positions);
         assert!(set.remove(i0));
-        println!("{:?}", set.positions);
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
 
         set[i0] = 10;
     }
 
-    #[test]
-    fn get_unchecked() {
-        let mut set = SparseSet::<usize>::new();
+    #[test_with(DynamicContainerMarker, StaticContainerMarker<2>)]
+    fn get_unchecked<T: SparseSetContainers<usize>>() {
+        let mut set = GenericSparseSet::<usize, T>::new();
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        println!("{:?}", set.positions);
         assert!(set.remove(i0));
-        println!("{:?}", set.positions);
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
 

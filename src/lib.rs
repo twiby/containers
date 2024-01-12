@@ -5,4 +5,4 @@ pub fn dummy() -> String {
 mod sparseset;
 mod staticvec;
 
-pub use sparseset::SparseSet;
+pub use sparseset::{SparseSet, StaticSparseSet};
