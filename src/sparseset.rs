@@ -1,16 +1,39 @@
-#[derive(Debug, Clone)]
-pub struct SparseSet<T> {
-    data: Vec<(usize, T)>,
-    positions: Vec<Option<usize>>,
-    free_indices: Vec<usize>,
+use crate::staticvec::VecLike;
+
+pub trait SparseSetContainers<T> {
+    type DataContainer: VecLike<(usize, T)>;
+    type PositionsContainer: VecLike<Option<usize>>;
+    type FreeIndicesContainer: VecLike<usize>;
 }
 
-impl<T> SparseSet<T> {
+pub struct DynamicContainerMarker;
+impl<T> SparseSetContainers<T> for DynamicContainerMarker {
+    type DataContainer = Vec<(usize, T)>;
+    type PositionsContainer = Vec<Option<usize>>;
+    type FreeIndicesContainer = Vec<usize>;
+}
+
+pub type SparseSet<T> = GenericSparseSet<T, DynamicContainerMarker>;
+
+#[derive(Debug, Clone)]
+pub struct GenericSparseSet<T, Containers>
+where
+    Containers: SparseSetContainers<T>,
+{
+    data: Containers::DataContainer,
+    positions: Containers::PositionsContainer,
+    free_indices: Containers::FreeIndicesContainer,
+}
+
+impl<T, Containers> GenericSparseSet<T, Containers>
+where
+    Containers: SparseSetContainers<T>,
+{
     pub fn new() -> Self {
         Self {
-            data: vec![],
-            positions: vec![],
-            free_indices: vec![],
+            data: Containers::DataContainer::new(),
+            positions: Containers::PositionsContainer::new(),
+            free_indices: Containers::FreeIndicesContainer::new(),
         }
     }
 
@@ -94,7 +117,10 @@ impl<T> SparseSet<T> {
     }
 }
 
-impl<T> std::ops::Index<usize> for SparseSet<T> {
+impl<T, Containers> std::ops::Index<usize> for GenericSparseSet<T, Containers>
+where
+    Containers: SparseSetContainers<T>,
+{
     type Output = T;
 
     fn index(&self, n: usize) -> &T {
@@ -102,7 +128,10 @@ impl<T> std::ops::Index<usize> for SparseSet<T> {
     }
 }
 
-impl<T> std::ops::IndexMut<usize> for SparseSet<T> {
+impl<T, Containers> std::ops::IndexMut<usize> for GenericSparseSet<T, Containers>
+where
+    Containers: SparseSetContainers<T>,
+{
     fn index_mut(&mut self, n: usize) -> &mut T {
         self.get_mut(n).unwrap()
     }
@@ -190,6 +219,7 @@ mod tests {
         println!("{:?}", set.positions);
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
+        assert_eq!(set[i1], 1);
 
         set[i1] = 10;
         assert_eq!(set[i1], 10);
