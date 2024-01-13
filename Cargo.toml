@@ -9,3 +9,8 @@ edition = "2021"
 
 [dev-dependencies]
 typed_test_gen = "0.1.0"
+criterion = "0.5.1"
+
+[[bench]]
+name = "insertion"
+harness = false
