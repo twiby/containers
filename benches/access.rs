@@ -38,9 +38,8 @@ pub fn sparseset_access<const N: usize>(c: &mut Criterion) {
     name.push_str(&N.to_string());
 
     let mut set = SparseSet::new();
-    let mut indices = Vec::new();
     for i in 0..N {
-        indices.push(set.insert(i));
+        set.insert(i);
     }
     let mid = N >> 1;
 
@@ -51,8 +50,8 @@ pub fn sparseset_access<const N: usize>(c: &mut Criterion) {
 
 criterion_group!(
     access, 
-    vec_access<10_000>, 
-    map_access<10_000>, 
-    sparseset_access<10_000>
+    vec_access<100_000>, 
+    map_access<100_000>, 
+    sparseset_access<100_000>
 );
 criterion_main!(access);

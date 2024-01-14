@@ -17,3 +17,9 @@ harness = false
 [[bench]]
 name = "access"
 harness = false
+[[bench]]
+name = "presence"
+harness = false
+[[bench]]
+name = "removal"
+harness = false

@@ -49,9 +49,9 @@ pub fn sparseset_insertion<const N: usize>(c: &mut Criterion) {
 
 criterion_group!(
     insertion, 
-    vec_insertion<10_000>, 
-    set_insertion<10_000>, 
-    map_insertion<10_000>, 
-    sparseset_insertion<10_000>
+    vec_insertion<100_000>, 
+    set_insertion<100_000>, 
+    map_insertion<100_000>, 
+    sparseset_insertion<100_000>
 );
 criterion_main!(insertion);
