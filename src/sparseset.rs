@@ -72,7 +72,7 @@ where
 
         self.data.swap_remove(position);
         let idx = self.data[position].0;
-        self.positions[idx] = Some(position);
+        self.positions[idx] = self.positions[n];
         self.positions[n] = None;
 
         self.free_indices.push(n);
