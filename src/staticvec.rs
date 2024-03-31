@@ -1,8 +1,9 @@
 use std::ops::Index;
 use std::ops::IndexMut;
 
-pub trait VecLike<T>: Index<usize, Output = T> + IndexMut<usize> {
+pub trait VecLike<T>: Default + Index<usize, Output = T> + IndexMut<usize> {
     fn new() -> Self;
+    fn clear(&mut self);
     fn push(&mut self, val: T);
     fn pop(&mut self) -> Option<T>;
     fn len(&self) -> usize;
@@ -18,6 +19,9 @@ pub trait VecLike<T>: Index<usize, Output = T> + IndexMut<usize> {
 impl<T> VecLike<T> for Vec<T> {
     fn new() -> Self {
         Self::new()
+    }
+    fn clear(&mut self) {
+        self.clear();
     }
     fn push(&mut self, val: T) {
         self.push(val)
@@ -57,12 +61,24 @@ pub struct StaticVec<T, const N: usize> {
     len: usize,
 }
 
+impl<T: Default, const N: usize> Default for StaticVec<T, N> {
+    fn default() -> Self {
+        Self {
+            arr: [0; N].map(|_| T::default()),
+            len: 0,
+        }
+    }
+}
+
 impl<T: Default, const N: usize> VecLike<T> for StaticVec<T, N> {
     fn new() -> Self {
         Self {
             arr: [0; N].map(|_| T::default()),
             len: 0,
         }
+    }
+    fn clear(&mut self) {
+        self.len = 0;
     }
     fn push(&mut self, val: T) {
         self.arr[self.len] = val;
@@ -91,16 +107,18 @@ impl<T: Default, const N: usize> VecLike<T> for StaticVec<T, N> {
         self.arr[..self.len].iter_mut()
     }
     fn get(&self, n: usize) -> Option<&T> {
-        self.arr.get(n)
+        self.arr[0..self.len()].get(n)
     }
     fn get_mut(&mut self, n: usize) -> Option<&mut T> {
-        self.arr.get_mut(n)
+        let size = self.len();
+        self.arr[0..size].get_mut(n)
     }
     unsafe fn get_unchecked(&self, n: usize) -> &T {
-        self.arr.get_unchecked(n)
+        self.arr[0..self.len()].get_unchecked(n)
     }
     unsafe fn get_unchecked_mut(&mut self, n: usize) -> &mut T {
-        self.arr.get_unchecked_mut(n)
+        let size = self.len();
+        self.arr[0..size].get_unchecked_mut(n)
     }
 }
 

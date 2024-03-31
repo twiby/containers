@@ -34,16 +34,51 @@ where
     free_indices: Containers::FreeIndicesContainer,
 }
 
+impl<T> Default for SparseSet<T> {
+    fn default() -> Self {
+        Self {
+            data: Default::default(),
+            positions: Default::default(),
+            free_indices: Default::default(),
+        }
+    }
+}
+impl<T: Default, const N: usize> Default for StaticSparseSet<T, N> {
+    fn default() -> Self {
+        Self {
+            data: Default::default(),
+            positions: Default::default(),
+            free_indices: Default::default(),
+        }
+    }
+}
+
 impl<T, Containers> GenericSparseSet<T, Containers>
 where
     Containers: SparseSetContainers<T>,
 {
+    pub fn data(&self) -> &Containers::DataContainer {
+        &self.data
+    }
+    pub fn positions(&self) -> &Containers::PositionsContainer {
+        &self.positions
+    }
+    pub fn free_indices(&self) -> &Containers::FreeIndicesContainer {
+        &self.free_indices
+    }
+
     pub fn new() -> Self {
         Self {
             data: Containers::DataContainer::new(),
             positions: Containers::PositionsContainer::new(),
             free_indices: Containers::FreeIndicesContainer::new(),
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.data.clear();
+        self.positions.clear();
+        self.free_indices.clear();
     }
 
     /// Inserts a new element in the set, returning its index
@@ -298,6 +333,34 @@ mod tests {
 
         for (n, &m) in indices.iter().zip(set.values()) {
             assert_eq!(n + 1, m)
+        }
+    }
+
+    #[test_with(DynamicContainerMarker, StaticContainerMarker<20>)]
+    fn clear<T: SparseSetContainers<usize>>() {
+        let mut set = GenericSparseSet::<usize, T>::new();
+
+        let mut indices = vec![];
+        for i in 0..10 {
+            indices.push(set.insert(i));
+        }
+
+        set.clear();
+        assert_eq!(set.len(), 0);
+
+        for i in &indices {
+            assert!(!set.contains(*i));
+        }
+
+        let mut indices = vec![];
+        for i in 0..10 {
+            indices.push(set.insert(i));
+        }
+
+        assert_eq!(set.len(), 10);
+
+        for i in indices {
+            assert!(set.contains(i));
         }
     }
 }
