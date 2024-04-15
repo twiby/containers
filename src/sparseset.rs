@@ -99,19 +99,26 @@ where
         index
     }
 
-    /// Removes the element at index `n` from the set, returning whether the element was at all present
-    pub fn remove(&mut self, n: usize) -> bool {
+    /// Removes the element at index `n` from the set, returning whether the
+    /// element was at all present
+    pub fn remove(&mut self, n: usize) -> Option<T> {
         let Some(position) = self.position(n) else {
-            return false;
+            return None;
         };
 
-        self.data.swap_remove(position);
-        let idx = self.data[position].0;
-        self.positions[idx] = self.positions[n];
-        self.positions[n] = None;
+        let deleted = if position == self.data.len() - 1 {
+            self.data.pop()
+        } else {
+            let d = self.data.swap_remove(position);
+            let idx = self.data[position].0;
+            self.positions[idx] = self.positions[n];
+            Some(d)
+        }
+        .map(|(_, d)| d);
 
+        self.positions[n] = None;
         self.free_indices.push(n);
-        return true;
+        return deleted;
     }
 
     #[inline(always)]
@@ -201,9 +208,9 @@ where
 mod tests {
     use crate::sparseset::DynamicContainerMarker;
     use crate::sparseset::GenericSparseSet;
+    use crate::sparseset::SparseSet;
     use crate::sparseset::SparseSetContainers;
     use crate::sparseset::StaticContainerMarker;
-    use crate::SparseSet;
     use typed_test_gen::test_with;
 
     #[derive(Clone, Default, Debug)]
@@ -230,6 +237,15 @@ mod tests {
     }
 
     #[test_with(usize, String, Dummy)]
+    fn remove_first<T: Default>() {
+        let mut set = SparseSet::<T>::new();
+
+        let idx = set.insert(T::default());
+        assert!(set.remove(idx).is_some());
+        assert_eq!(set.len(), 0);
+    }
+
+    #[test_with(usize, String, Dummy)]
     fn remove<T: Default>() {
         let mut set = SparseSet::<T>::new();
 
@@ -240,13 +256,13 @@ mod tests {
         assert_eq!(indices.len(), 10);
 
         for idx in indices.iter().take(5) {
-            assert!(set.remove(*idx));
-            assert!(!set.remove(*idx));
+            assert!(set.remove(*idx).is_some());
+            assert!(set.remove(*idx).is_none());
         }
         for idx in indices.iter().skip(5) {
             assert!(set.contains(*idx));
         }
-        assert!(!set.remove(20));
+        assert!(set.remove(20).is_none());
         assert_eq!(set.len(), 5);
 
         let size = set.positions.len();
@@ -260,7 +276,7 @@ mod tests {
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        assert!(set.remove(i0));
+        assert!(set.remove(i0).is_some());
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
 
@@ -276,7 +292,7 @@ mod tests {
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        assert!(set.remove(i0));
+        assert!(set.remove(i0).is_some());
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
         assert_eq!(set[i1], 1);
@@ -292,7 +308,7 @@ mod tests {
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        assert!(set.remove(i0));
+        assert!(set.remove(i0).is_some());
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
 
@@ -305,7 +321,7 @@ mod tests {
         let i0 = set.insert(0);
         let i1 = set.insert(1);
 
-        assert!(set.remove(i0));
+        assert!(set.remove(i0).is_some());
         assert!(set.contains(i1));
         assert!(!set.contains(i0));
 
