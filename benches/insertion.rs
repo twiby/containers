@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use containers::SparseSet;
+use containers::SparseVec;
 
 pub fn vec_insertion<const N: usize>(c: &mut Criterion) {
     let mut name = "vec insertion ".to_string();
@@ -60,7 +60,7 @@ pub fn sparseset_insertion<const N: usize>(c: &mut Criterion) {
     name.push_str(&N.to_string());
     c.bench_function(name.as_str(), |b| {
         b.iter(|| {
-            let mut v = SparseSet::new();
+            let mut v = SparseVec::new();
             for i in 0..N {
                 v.insert(black_box(i));
             }

@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::collections::{BTreeMap, HashMap};
 
-use containers::SparseSet;
+use containers::SparseVec;
 
 pub fn vec_access<const N: usize>(c: &mut Criterion) {
     let mut name = "vec access ".to_string();
@@ -58,7 +58,7 @@ pub fn sparseset_access<const N: usize>(c: &mut Criterion) {
     let mut name = "sparseset access ".to_string();
     name.push_str(&N.to_string());
 
-    let mut set = SparseSet::new();
+    let mut set = SparseVec::new();
     for i in 0..N {
         set.insert(i);
     }

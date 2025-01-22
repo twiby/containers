@@ -2,7 +2,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::time::{Duration, Instant};
 
-use containers::SparseSet;
+use containers::SparseVec;
 
 pub fn vec_removal<const N: usize>(c: &mut Criterion) {
     let mut name = "vec removal ".to_string();
@@ -104,7 +104,7 @@ pub fn sparseset_removal<const N: usize>(c: &mut Criterion) {
     let mut name = "sparseset removal ".to_string();
     name.push_str(&N.to_string());
 
-    let mut set = SparseSet::new();
+    let mut set = SparseVec::new();
     let mut indices = VecDeque::new();
     for i in 0..N {
         indices.push_back(set.insert(i));

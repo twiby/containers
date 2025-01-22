@@ -19,3 +19,7 @@ harness = false
 [[bench]]
 name = "removal"
 harness = false
+
+[[bench]]
+name = "string_map"
+harness = false

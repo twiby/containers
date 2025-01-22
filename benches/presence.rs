@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use containers::SparseSet;
+use containers::SparseVec;
 
 pub fn vec_presence<const N: usize>(c: &mut Criterion) {
     let mut name = "vec presence ".to_string();
@@ -75,7 +75,7 @@ pub fn sparseset_presence<const N: usize>(c: &mut Criterion) {
     let mut name = "sparseset presence ".to_string();
     name.push_str(&N.to_string());
 
-    let mut set = SparseSet::new();
+    let mut set = SparseVec::new();
     for i in 0..N {
         set.insert(i);
     }
