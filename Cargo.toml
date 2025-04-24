@@ -3,6 +3,10 @@ name = "containers"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+rustc-hash = "2.1"
+rayon = { version = "1.10", optional = true }
+
 [dev-dependencies]
 typed_test_gen = "0.1.0"
 criterion = "0.5.1"
