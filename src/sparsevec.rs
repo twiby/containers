@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::ops::Index;
 use std::ops::IndexMut;
 
@@ -24,7 +25,7 @@ pub struct SparseVec<T> {
     data: Vec<T>,
     /// Maps this set's public indices with a slot in `data`.
     positions: Vec<usize>,
-    /// Stores removed indices that available for re-use
+    /// Stores removed indices that are available for re-use
     free_indices: Vec<usize>,
 }
 
@@ -229,6 +230,13 @@ impl<T> IndexMut<usize> for SparseVec<T> {
     }
 }
 
+impl<T> Deref for SparseVec<T> {
+    type Target = [T];
+    fn deref(&self) -> &[T] {
+        &self.data
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::SparseVec;
@@ -419,5 +427,20 @@ mod tests {
         for i in indices {
             assert!(set.contains(i));
         }
+    }
+
+    #[test]
+    fn test_deref() {
+        let mut set = SparseVec::<usize>::new();
+
+        let mut indices = vec![];
+        for i in 0..10 {
+            indices.push(set.insert(i));
+        }
+        let to_remove = indices.remove(0);
+        set.remove(to_remove);
+
+        let as_slice: &[usize] = &set;
+        assert_eq!(as_slice, &[9, 1, 2, 3, 4, 5, 6, 7, 8]);
     }
 }
